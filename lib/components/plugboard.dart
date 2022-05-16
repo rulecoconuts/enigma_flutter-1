@@ -24,19 +24,15 @@ class BasicPlugboard implements Plugboard {
   }
   @override
   String transform(String character) {
-    bool isCharacterUpperCase = character.toUpperCase() == character;
-
-    String? tranformedCharacter = setting[character.toLowerCase()];
+    String? tranformedCharacter = setting[character];
     tranformedCharacter = tranformedCharacter ?? character;
-
-    if (isCharacterUpperCase) return tranformedCharacter.toUpperCase();
-
     return tranformedCharacter;
   }
 
   @override
   void set(String from, String to) {
     setting[from.toLowerCase()] = to.toLowerCase();
+    setting[to.toLowerCase()] = from.toLowerCase();
   }
 
   @override

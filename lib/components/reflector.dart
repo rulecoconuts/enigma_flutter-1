@@ -38,7 +38,8 @@ class BasicAlphaNumericReflector implements Reflector {
 
   @override
   String transform(String character) {
-    return mapping[character.toLowerCase()]!;
+    String transformedCharacter = mapping[character]!;
+    return transformedCharacter;
   }
 
   /// Generate a basic alphanumeric reflector from json

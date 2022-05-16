@@ -21,7 +21,8 @@ abstract class Rotor extends MachineComponent {
 }
 
 class BasicAlphaNumericRotor implements Rotor {
-  static const String alphaNumerics = "abcdefghijklmnopqrstuvwxyz0123456789";
+  static const String alphaNumerics =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
   // Analogous to the mapping from one alphabet to another
   final List<int> wheel = [];
@@ -77,12 +78,10 @@ class BasicAlphaNumericRotor implements Rotor {
   /// Transform a character according to the rotor mapping
   @override
   String transform(String character, {bool backwards = false}) {
-    bool isCharacterUpperCase = character.toUpperCase() == character;
-    String transformedCharacter = backwards
-        ? _backwardsTransform(character.toLowerCase())
-        : alphaNumerics[wheel[_getAlphabetIndex(character.toLowerCase())]];
-
-    if (isCharacterUpperCase) return transformedCharacter.toUpperCase();
+    String transformedCharacter = "";
+    transformedCharacter = backwards
+        ? _backwardsTransform(character)
+        : alphaNumerics[wheel[_getAlphabetIndex(character)]];
 
     return transformedCharacter;
   }
