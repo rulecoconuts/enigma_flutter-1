@@ -1,21 +1,32 @@
-abstract class RotorSet {
+import 'package:enigma_flutter/components/machineComponent.dart';
+
+abstract class RotorSet extends MachineComponent {
   void step();
   String transform(String character, {bool backwards = false});
+  factory RotorSet.config(Map<String, dynamic> json) {
+    return BasicRotorSet.config(json["config"]);
+  }
 }
 
-abstract class Rotor {
+abstract class Rotor extends MachineComponent {
   set onFullRotation(Function()? onFullRotation);
   Function()? get onFullRotation;
   void step();
   String transform(String character, {bool backwards = false});
+
+  /// Generate a rotor from a json configuration
+  factory Rotor.config(Map<String, dynamic> json) {
+    return BasicAlphaNumericRotor.config(json["config"]);
+  }
 }
 
 class BasicAlphaNumericRotor implements Rotor {
-  static const String alphaNumerics =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  static const String alphaNumerics = "abcdefghijklmnopqrstuvwxyz0123456789";
 
   // Analogous to the mapping from one alphabet to another
-  late List<int> wheel;
+  final List<int> wheel = [];
+
+  final List<int> initialWheelSettings = [];
 
   // Analogous to the wiring
   //late List<String> settings;
@@ -23,7 +34,8 @@ class BasicAlphaNumericRotor implements Rotor {
   int offsetFromInitialWheelPosition = 0;
 
   BasicAlphaNumericRotor({List<int>? wheel, List<String>? settings}) {
-    this.wheel = wheel ?? _generateWheel();
+    this.wheel.addAll(wheel ?? _generateWheel());
+    initialWheelSettings.addAll(this.wheel);
     //this.settings = settings ?? _generateSettings();
   }
 
@@ -65,17 +77,35 @@ class BasicAlphaNumericRotor implements Rotor {
   /// Transform a character according to the rotor mapping
   @override
   String transform(String character, {bool backwards = false}) {
-    return backwards
-        ? _backwardsTransform(character)
-        : alphaNumerics[wheel[_getAlphabetIndex(character)]];
+    bool isCharacterUpperCase = character.toUpperCase() == character;
+    String transformedCharacter = backwards
+        ? _backwardsTransform(character.toLowerCase())
+        : alphaNumerics[wheel[_getAlphabetIndex(character.toLowerCase())]];
+
+    if (isCharacterUpperCase) return transformedCharacter.toUpperCase();
+
+    return transformedCharacter;
+  }
+
+  /// Generate a BasicAlphaNumericRotor from a json configuration
+  factory BasicAlphaNumericRotor.config(Map<String, dynamic> json) {
+    return BasicAlphaNumericRotor(wheel: json["initialWheelSettings"]);
+  }
+
+  @override
+  Map<String, dynamic> generateConfig() {
+    return {
+      "type": "${this.runtimeType}",
+      "config": {"initialWheelSetitngs": initialWheelSettings}
+    };
   }
 }
 
 /// Basic alphabet rotor set for holding a standard set of basic alphabetic rotors
-class BasicAlphaNumericRotorSet implements RotorSet {
-  List<BasicAlphaNumericRotor> _rotors;
+class BasicRotorSet implements RotorSet {
+  List<Rotor> _rotors;
 
-  BasicAlphaNumericRotorSet(this._rotors) {
+  BasicRotorSet(this._rotors) {
     _setupRotorSetMechanics();
   }
 
@@ -97,9 +127,27 @@ class BasicAlphaNumericRotorSet implements RotorSet {
   /// Transform a character through the rotors in the rotor set
   @override
   String transform(String character, {bool backwards = false}) {
-    return _rotors.fold<String>(
+    return (backwards ? _rotors.reversed : _rotors).fold<String>(
         character,
         (previousValue, element) =>
             element.transform(previousValue, backwards: backwards));
+  }
+
+  /// Generate a BasicRotorSet from a json configuration
+  factory BasicRotorSet.config(Map<String, dynamic> json) {
+    List<Rotor> rotors = (json["rotors"] as List<Map<String, dynamic>>)
+        .map((rotorJson) => Rotor.config(rotorJson))
+        .toList();
+    return BasicRotorSet(rotors);
+  }
+
+  @override
+  Map<String, dynamic> generateConfig() {
+    return {
+      "type": "${this.runtimeType}",
+      "config": {
+        "rotors": _rotors.map((rotor) => rotor.generateConfig()).toList()
+      }
+    };
   }
 }

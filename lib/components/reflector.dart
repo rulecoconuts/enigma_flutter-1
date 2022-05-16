@@ -1,13 +1,17 @@
 import 'dart:collection';
 
+import 'package:enigma_flutter/components/machineComponent.dart';
 import 'package:enigma_flutter/components/rotor.dart';
 
 /// Reflects characters in pairs
-abstract class Reflector {
+abstract class Reflector extends MachineComponent {
   String transform(String character);
+  factory Reflector.config(Map<String, dynamic> json) {
+    return BasicAlphaNumericReflector.config(json);
+  }
 }
 
-class BasicAlphaNumericReflector extends Reflector {
+class BasicAlphaNumericReflector implements Reflector {
   final Map<String, String> mapping = {};
 
   BasicAlphaNumericReflector({Map<String, String>? mapping}) {
@@ -34,6 +38,19 @@ class BasicAlphaNumericReflector extends Reflector {
 
   @override
   String transform(String character) {
-    return mapping[character]!;
+    return mapping[character.toLowerCase()]!;
+  }
+
+  /// Generate a basic alphanumeric reflector from json
+  factory BasicAlphaNumericReflector.config(Map<String, dynamic> json) {
+    return BasicAlphaNumericReflector(mapping: json["mapping"]);
+  }
+
+  @override
+  Map<String, dynamic> generateConfig() {
+    return {
+      "type": "${this.runtimeType}",
+      "config": {"mapping": mapping}
+    };
   }
 }

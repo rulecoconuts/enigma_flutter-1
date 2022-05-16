@@ -21,10 +21,21 @@ abstract class EnigmaMachine {
   Function(String originalCharacter, String character,
       String transformedCharacter)? onReflectorTransformed;
 
+  Function(String originalMessage, String transformedMessage)? onCompleted;
+
   FutureOr<String> transform(String message);
+
+  Map<String, dynamic> generateConfig();
+
+  factory EnigmaMachine.config(Map<String, dynamic> json) {
+    return BasicEnigmaMachine(
+        plugboard: Plugboard.config(json["plugboard"]),
+        reflector: Reflector.config(json["reflector"]),
+        rotorSet: RotorSet.config(json["rotorSet"]));
+  }
 }
 
-class BasicEnigmaMachine extends EnigmaMachine {
+class BasicEnigmaMachine implements EnigmaMachine {
   @override
   Plugboard plugboard;
 
@@ -45,6 +56,9 @@ class BasicEnigmaMachine extends EnigmaMachine {
   @override
   Function(String originalCharacter, String character,
       String transformedCharacter)? onReflectorTransformed;
+
+  @override
+  Function(String originalMessage, String transformedMessage)? onCompleted;
 
   BasicEnigmaMachine(
       {required this.plugboard,
@@ -87,6 +101,18 @@ class BasicEnigmaMachine extends EnigmaMachine {
       String plugboardLast = _plugboardTransform(character, rotorLast, true);
       transformed += plugboardLast;
     }
+
+    onCompleted?.call(message, transformed);
     return transformed;
+  }
+
+  @override
+  Map<String, dynamic> generateConfig() {
+    return {
+      "type": "${this.runtimeType}",
+      "plugboard": plugboard.generateConfig(),
+      "reflector": reflector.generateConfig(),
+      "rotorSet": rotorSet.generateConfig()
+    };
   }
 }
