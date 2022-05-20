@@ -83,7 +83,7 @@ class BasicEnigmaMachine implements EnigmaMachine {
   String _rotorTransform(
       String originalCharacter, String character, bool backwards) {
     String rotorTransChar = rotorSet.transform(character, backwards: backwards);
-    if (!backwards) rotorSet.step();
+    if (backwards) rotorSet.step();
     onRotorTransformed?.call(
         originalCharacter, character, rotorTransChar, backwards);
     return rotorTransChar;

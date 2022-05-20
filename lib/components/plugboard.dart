@@ -31,13 +31,13 @@ class BasicPlugboard implements Plugboard {
 
   @override
   void set(String from, String to) {
-    setting[from.toLowerCase()] = to.toLowerCase();
-    setting[to.toLowerCase()] = from.toLowerCase();
+    setting[from] = to;
+    setting[to] = from;
   }
 
   @override
   void remove(String from) {
-    setting.remove(from.toLowerCase());
+    setting.remove(from);
   }
 
   factory BasicPlugboard.config(Map<String, dynamic> json) {

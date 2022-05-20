@@ -7,7 +7,7 @@ import 'package:enigma_flutter/components/rotor.dart';
 abstract class Reflector extends MachineComponent {
   String transform(String character);
   factory Reflector.config(Map<String, dynamic> json) {
-    return BasicAlphaNumericReflector.config(json);
+    return BasicAlphaNumericReflector.config(json["config"]);
   }
 }
 

@@ -22,7 +22,7 @@ abstract class Rotor extends MachineComponent {
 
 class BasicAlphaNumericRotor implements Rotor {
   static const String alphaNumerics =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 #";
 
   // Analogous to the mapping from one alphabet to another
   final List<int> wheel = [];
@@ -33,8 +33,12 @@ class BasicAlphaNumericRotor implements Rotor {
   //late List<String> settings;
 
   int offsetFromInitialWheelPosition = 0;
+  late final bool clockWiseRotate;
 
-  BasicAlphaNumericRotor({List<int>? wheel, List<String>? settings}) {
+  BasicAlphaNumericRotor(
+      {List<int>? wheel,
+      List<String>? settings,
+      this.clockWiseRotate = false}) {
     this.wheel.addAll(wheel ?? _generateWheel());
     initialWheelSettings.addAll(this.wheel);
     //this.settings = settings ?? _generateSettings();
@@ -64,7 +68,11 @@ class BasicAlphaNumericRotor implements Rotor {
   /// Rotate the wheel one step
   @override
   void step() {
-    wheel.insert(wheel.length - 1, wheel.removeAt(0));
+    if (clockWiseRotate) {
+      wheel.insert(0, wheel.removeAt(wheel.length - 1));
+    } else {
+      wheel.insert(wheel.length - 1, wheel.removeAt(0));
+    }
     offsetFromInitialWheelPosition =
         (offsetFromInitialWheelPosition + 1) % alphaNumerics.length;
     if (offsetFromInitialWheelPosition == 0) onFullRotation?.call();
@@ -95,7 +103,7 @@ class BasicAlphaNumericRotor implements Rotor {
   Map<String, dynamic> generateConfig() {
     return {
       "type": "${this.runtimeType}",
-      "config": {"initialWheelSetitngs": initialWheelSettings}
+      "config": {"initialWheelSettings": initialWheelSettings}
     };
   }
 }
@@ -126,10 +134,25 @@ class BasicRotorSet implements RotorSet {
   /// Transform a character through the rotors in the rotor set
   @override
   String transform(String character, {bool backwards = false}) {
-    return (backwards ? _rotors.reversed : _rotors).fold<String>(
-        character,
-        (previousValue, element) =>
-            element.transform(previousValue, backwards: backwards));
+    String transformedCharacter = character;
+    // (backwards ? _rotors.reversed : _rotors)
+    //     .fold<String>(
+    //         character,
+    //         (previousValue, element) =>
+    //             element.transform(previousValue, backwards: backwards));
+
+    if (backwards) {
+      for (int i = _rotors.length - 1; i >= 0; i--) {
+        transformedCharacter =
+            _rotors[i].transform(transformedCharacter, backwards: true);
+      }
+    } else {
+      for (int i = 0; i < _rotors.length; i++) {
+        transformedCharacter = _rotors[i].transform(transformedCharacter);
+      }
+    }
+
+    return transformedCharacter;
   }
 
   /// Generate a BasicRotorSet from a json configuration
