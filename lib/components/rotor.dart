@@ -27,8 +27,6 @@ class BasicAlphaNumericRotor implements Rotor {
   // Analogous to the mapping from one alphabet to another
   final List<int> wheel = [];
 
-  final List<int> initialWheelSettings = [];
-
   // Analogous to the wiring
   //late List<String> settings;
 
@@ -40,7 +38,6 @@ class BasicAlphaNumericRotor implements Rotor {
       List<String>? settings,
       this.clockWiseRotate = false}) {
     this.wheel.addAll(wheel ?? _generateWheel());
-    initialWheelSettings.addAll(this.wheel);
     //this.settings = settings ?? _generateSettings();
   }
 
@@ -96,14 +93,14 @@ class BasicAlphaNumericRotor implements Rotor {
 
   /// Generate a BasicAlphaNumericRotor from a json configuration
   factory BasicAlphaNumericRotor.config(Map<String, dynamic> json) {
-    return BasicAlphaNumericRotor(wheel: json["initialWheelSettings"]);
+    return BasicAlphaNumericRotor(wheel: json["wheel"]);
   }
 
   @override
   Map<String, dynamic> generateConfig() {
     return {
       "type": "${this.runtimeType}",
-      "config": {"initialWheelSettings": initialWheelSettings}
+      "config": {"wheel": wheel}
     };
   }
 }

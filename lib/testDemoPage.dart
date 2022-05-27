@@ -21,6 +21,7 @@ class _TestDemoPageState extends State<TestDemoPage> {
   String message = "";
   String encryptedMessage = "";
   String decryptedMessage = "";
+  late Map<String, dynamic> _lastEncryptionConfig;
 
   @override
   void initState() {
@@ -36,9 +37,10 @@ class _TestDemoPageState extends State<TestDemoPage> {
     rotors.add(BasicAlphaNumericRotor());
     _encryptionMachine.rotorSet = BasicRotorSet(rotors);
 
+    _lastEncryptionConfig = _encryptionMachine.generateConfig();
+
     // Copy encryption config to decryption machine
-    _decryptionMachine =
-        EnigmaMachine.config(_encryptionMachine.generateConfig());
+    _decryptionMachine = EnigmaMachine.config(_lastEncryptionConfig);
     _encryptionMachine.onCompleted = _onEncryptionCompleted;
     _decryptionMachine.onCompleted = _onDeryptionCompleted;
     super.initState();
@@ -72,14 +74,25 @@ class _TestDemoPageState extends State<TestDemoPage> {
     });
   }
 
+  String _getAppendedCharacters(String oldMessage, String newMessage) {
+    return newMessage.replaceFirst(oldMessage, "");
+  }
+
+  /// Append Encrypted characters to existing encrypted messages
+  void _appendEncryptedCharacters(String oldMessage, String newMessage) async {
+    // Add encrypted character
+    String appendedEncCharacters = await _encryptionMachine
+        .transform(_getAppendedCharacters(oldMessage, newMessage));
+    encryptedMessage += appendedEncCharacters;
+    decryptedMessage +=
+        await _decryptionMachine.transform(appendedEncCharacters);
+  }
+
   void _addEncryptedCharacterToMessage(String message) async {
-    if (message.length > this.message.length) {
-      // Add encrypted character
-      encryptedMessage +=
-          await _encryptionMachine.transform(message[message.length - 1]);
-      decryptedMessage += await _decryptionMachine
-          .transform(encryptedMessage[encryptedMessage.length - 1]);
-    }
+    if (message.startsWith(this.message) &&
+        message.length > this.message.length) {
+      _appendEncryptedCharacters(this.message, message);
+    } else {}
 
     setState(() {
       this.message = message;
