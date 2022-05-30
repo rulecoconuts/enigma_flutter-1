@@ -1,6 +1,7 @@
 import 'package:enigma_flutter/components/plugboard.dart';
 import 'package:enigma_flutter/components/reflector.dart';
 import 'package:enigma_flutter/components/rotor.dart';
+import 'package:enigma_flutter/helpers/mutation_detection.dart';
 import 'package:enigma_flutter/machine.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +23,8 @@ class _TestDemoPageState extends State<TestDemoPage> {
   String encryptedMessage = "";
   String decryptedMessage = "";
   late Map<String, dynamic> _lastEncryptionConfig;
+  final TextMutationClassifier _textMutationClassifier =
+      SimpleEnigmaTextMutationClassifier();
 
   @override
   void initState() {
@@ -43,7 +46,67 @@ class _TestDemoPageState extends State<TestDemoPage> {
     _decryptionMachine = EnigmaMachine.config(_lastEncryptionConfig);
     _encryptionMachine.onCompleted = _onEncryptionCompleted;
     _decryptionMachine.onCompleted = _onDeryptionCompleted;
+
+    _configureTextMutationClassifier();
     super.initState();
+  }
+
+  void _configureTextMutationClassifier() {
+    _textMutationClassifier.onAppend = _appendText;
+    _textMutationClassifier.onTruncationAtEnd = _truncateText;
+    _textMutationClassifier.onReplaced = _replaceText;
+  }
+
+  void _appendText(Appendage appendage) async {
+    if (appendage.previousText != message) return;
+    SimpleAppendage simpleAppendage = appendage as SimpleAppendage;
+    String encryptedAppendage =
+        await _encryptionMachine.transform(simpleAppendage.charactersAppended);
+
+    encryptedMessage += encryptedAppendage;
+    decryptedMessage += await _decryptionMachine.transform(encryptedAppendage);
+
+    setState(() {
+      message = appendage.newText;
+    });
+  }
+
+  void _truncateText(TruncationAtEnd truncationAtEnd) {
+    if (truncationAtEnd.previousText != message) return;
+    SimpleTruncationAtEnd simpleTruncationAtEnd =
+        truncationAtEnd as SimpleTruncationAtEnd;
+
+    //message = message.substring(0, simpleTruncationAtEnd.truncationStart);
+    encryptedMessage =
+        encryptedMessage.substring(0, simpleTruncationAtEnd.truncationStart);
+    decryptedMessage =
+        decryptedMessage.substring(0, simpleTruncationAtEnd.truncationStart);
+
+    // Revert the rotors of both machines to just before the truncated text was added
+    _encryptionMachine.rotorSet.step(
+        backwards: true, nSteps: simpleTruncationAtEnd.truncatedText.length);
+    _decryptionMachine.rotorSet.step(
+        backwards: true, nSteps: simpleTruncationAtEnd.truncatedText.length);
+
+    setState(() {
+      message = truncationAtEnd.newText;
+    });
+  }
+
+  void _replaceText(String previousText, String newText) async {
+    if (previousText != message) return;
+    // Revert the rotors to their initial state
+    _encryptionMachine.rotorSet
+        .step(backwards: true, nSteps: previousText.length);
+    _decryptionMachine.rotorSet
+        .step(backwards: true, nSteps: previousText.length);
+
+    encryptedMessage = await _encryptionMachine.transform(newText);
+    decryptedMessage = await _decryptionMachine.transform(encryptedMessage);
+
+    setState(() {
+      message = newText;
+    });
   }
 
   void _onEncryptionCompleted(
@@ -89,14 +152,14 @@ class _TestDemoPageState extends State<TestDemoPage> {
   }
 
   void _addEncryptedCharacterToMessage(String message) async {
-    if (message.startsWith(this.message) &&
-        message.length > this.message.length) {
-      _appendEncryptedCharacters(this.message, message);
-    } else {}
-
-    setState(() {
-      this.message = message;
-    });
+    // if (message.startsWith(this.message) &&
+    //     message.length > this.message.length) {
+    //   _appendEncryptedCharacters(this.message, message);
+    // } else {}
+    // setState(() {
+    //   this.message = message;
+    // });
+    _textMutationClassifier.detectMutation(this.message, message);
   }
 
   Widget get _rawTextBox {

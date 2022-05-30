@@ -1,7 +1,7 @@
 import 'package:enigma_flutter/components/machineComponent.dart';
 
 abstract class RotorSet extends MachineComponent {
-  void step();
+  void step({bool backwards = false, int nSteps = 1});
   String transform(String character, {bool backwards = false});
   factory RotorSet.config(Map<String, dynamic> json) {
     return BasicRotorSet.config(json["config"]);
@@ -9,9 +9,9 @@ abstract class RotorSet extends MachineComponent {
 }
 
 abstract class Rotor extends MachineComponent {
-  set onFullRotation(Function()? onFullRotation);
-  Function()? get onFullRotation;
-  void step();
+  set onFullRotation(Function({bool backwards, int nSteps})? onFullRotation);
+  Function({bool backwards, int nSteps})? get onFullRotation;
+  void step({bool backwards = false, int nSteps = 1});
   String transform(String character, {bool backwards = false});
 
   /// Generate a rotor from a json configuration
@@ -55,24 +55,47 @@ class BasicAlphaNumericRotor implements Rotor {
   }
 
   @override
-  Function()? onFullRotation;
+  Function({bool backwards, int nSteps})? onFullRotation;
 
   /// Get the index of the alphabet
   int _getAlphabetIndex(String character) {
     return alphaNumerics.indexOf(character);
   }
 
-  /// Rotate the wheel one step
+  /// Rotate the wheel a certain number of steps.
+  /// The steps are in the direction of this.clockWiseRotate if backwards is false,
+  /// and in the opposite direction if backwards is true
   @override
-  void step() {
-    if (clockWiseRotate) {
-      wheel.insert(0, wheel.removeAt(wheel.length - 1));
-    } else {
-      wheel.insert(wheel.length - 1, wheel.removeAt(0));
+  void step({bool backwards = false, int nSteps = 1}) {
+    assert(nSteps >= 1);
+
+    // Select rotation direction
+    bool clockWiseRotate =
+        backwards ? !this.clockWiseRotate : this.clockWiseRotate;
+
+    int direction = backwards ? -1 : 1;
+
+    // Rotate rotor the number of steps
+    for (int i = 0; i < nSteps; i++) {
+      if (clockWiseRotate) {
+        wheel.insert(0, wheel.removeAt(wheel.length - 1));
+      } else {
+        wheel.insert(wheel.length - 1, wheel.removeAt(0));
+      }
+
+      // Update offset from initial wheel position
+
+      offsetFromInitialWheelPosition =
+          (offsetFromInitialWheelPosition + direction) % alphaNumerics.length;
+
+      bool passingFullRotationBackwards = backwards &&
+          offsetFromInitialWheelPosition == alphaNumerics.length - 1;
+      bool passingFullRotationForward =
+          (!backwards) && offsetFromInitialWheelPosition == 0;
+      if (passingFullRotationForward || passingFullRotationBackwards) {
+        onFullRotation?.call(backwards: backwards, nSteps: nSteps);
+      }
     }
-    offsetFromInitialWheelPosition =
-        (offsetFromInitialWheelPosition + 1) % alphaNumerics.length;
-    if (offsetFromInitialWheelPosition == 0) onFullRotation?.call();
   }
 
   // Inverse of the transform operation
@@ -118,14 +141,16 @@ class BasicRotorSet implements RotorSet {
     for (int i = 0; i < _rotors.length; i++) {
       if (i != _rotors.length - 1) {
         // When this rotor completes a full rotation rotate the next rotor one step
-        _rotors[i].onFullRotation = () => _rotors[i + 1].step();
+        _rotors[i].onFullRotation = (
+                {bool backwards = false, int nSteps = 1}) =>
+            _rotors[i + 1].step(backwards: backwards, nSteps: nSteps);
       }
     }
   }
 
   @override
-  void step() {
-    _rotors.first.step();
+  void step({bool backwards = false, int nSteps = 1}) {
+    _rotors.first.step(backwards: backwards, nSteps: nSteps);
   }
 
   /// Transform a character through the rotors in the rotor set
