@@ -80,7 +80,7 @@ abstract class TextMutationClassifier {
 
   void Function(Prependage prependage)? onPrepend;
 
-  void detectMutation(String previousText, String newText);
+  void classifyMutation(String previousText, String newText);
 }
 
 class SimpleEnigmaTextMutationClassifier implements TextMutationClassifier {
@@ -185,7 +185,7 @@ class SimpleEnigmaTextMutationClassifier implements TextMutationClassifier {
   /// Detect the kind of mutation performed on a previousText based on a new
   /// text. Calls the function associated with the type of mutation detected
   @override
-  void detectMutation(String previousText, String newText) {
+  void classifyMutation(String previousText, String newText) {
     if (onAppend != null) {
       Appendage? appendage = isAppended(previousText, newText);
       if (appendage != null) {

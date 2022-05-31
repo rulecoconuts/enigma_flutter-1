@@ -1,4 +1,5 @@
 import 'package:enigma_flutter/components/machineComponent.dart';
+import 'package:html_character_entities/html_character_entities.dart';
 
 abstract class RotorSet extends MachineComponent {
   void step({bool backwards = false, int nSteps = 1});
@@ -21,8 +22,7 @@ abstract class Rotor extends MachineComponent {
 }
 
 class BasicAlphaNumericRotor implements Rotor {
-  static const String alphaNumerics =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 #";
+  static String alphaNumerics = "";
 
   // Analogous to the mapping from one alphabet to another
   final List<int> wheel = [];

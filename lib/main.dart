@@ -1,7 +1,14 @@
+import 'package:enigma_flutter/components/rotor.dart';
 import 'package:enigma_flutter/testDemoPage.dart';
 import 'package:flutter/material.dart';
+import 'package:html_character_entities/html_character_entities.dart';
 
 void main() {
+  BasicAlphaNumericRotor.alphaNumerics = HtmlCharacterEntities.characters.values
+      .toSet()
+      .toList()
+      .reduce((value, element) => value + element);
+  BasicAlphaNumericRotor.alphaNumerics += "۞\n\t";
   runApp(const MyApp());
 }
 

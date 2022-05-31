@@ -44,8 +44,6 @@ class _TestDemoPageState extends State<TestDemoPage> {
 
     // Copy encryption config to decryption machine
     _decryptionMachine = EnigmaMachine.config(_lastEncryptionConfig);
-    _encryptionMachine.onCompleted = _onEncryptionCompleted;
-    _decryptionMachine.onCompleted = _onDeryptionCompleted;
 
     _configureTextMutationClassifier();
     super.initState();
@@ -53,17 +51,22 @@ class _TestDemoPageState extends State<TestDemoPage> {
 
   void _configureTextMutationClassifier() {
     _textMutationClassifier.onAppend = _appendText;
-    _textMutationClassifier.onTruncationAtEnd = _truncateText;
+    _textMutationClassifier.onTruncationAtEnd = _truncateTextAtEnd;
     _textMutationClassifier.onReplaced = _replaceText;
   }
 
+  /// Handle appendage to input text
   void _appendText(Appendage appendage) async {
     if (appendage.previousText != message) return;
     SimpleAppendage simpleAppendage = appendage as SimpleAppendage;
+
+    // Add new characters to encrypted message
     String encryptedAppendage =
         await _encryptionMachine.transform(simpleAppendage.charactersAppended);
 
     encryptedMessage += encryptedAppendage;
+
+    // Decrypt new encrypted message
     decryptedMessage += await _decryptionMachine.transform(encryptedAppendage);
 
     setState(() {
@@ -71,7 +74,8 @@ class _TestDemoPageState extends State<TestDemoPage> {
     });
   }
 
-  void _truncateText(TruncationAtEnd truncationAtEnd) {
+  /// Handle truncation from end of input text
+  void _truncateTextAtEnd(TruncationAtEnd truncationAtEnd) {
     if (truncationAtEnd.previousText != message) return;
     SimpleTruncationAtEnd simpleTruncationAtEnd =
         truncationAtEnd as SimpleTruncationAtEnd;
@@ -93,6 +97,7 @@ class _TestDemoPageState extends State<TestDemoPage> {
     });
   }
 
+  /// Handle complete replacement of input text
   void _replaceText(String previousText, String newText) async {
     if (previousText != message) return;
     // Revert the rotors to their initial state
@@ -109,61 +114,16 @@ class _TestDemoPageState extends State<TestDemoPage> {
     });
   }
 
-  void _onEncryptionCompleted(
-      String originalMessage, String transformedMessage) {
-    if (originalMessage == message) {}
-  }
-
-  void _onDeryptionCompleted(
-      String originalMessage, String transformedMessage) {}
-
-  void _setMessage(String message) async {
-    String encryptedMessage = "";
-    String decryptedMessage = "";
-    if (this.message.isNotEmpty &&
-        this.message.substring(0, this.message.length - 1) == message) {
-      encryptedMessage =
-          this.encryptedMessage.substring(0, this.encryptedMessage.length - 1);
-      decryptedMessage =
-          this.decryptedMessage.substring(0, this.decryptedMessage.length - 1);
-    } else {
-      encryptedMessage = await _encryptionMachine.transform(message);
-      decryptedMessage = await _decryptionMachine.transform(encryptedMessage);
-    }
-    setState(() {
-      this.message = message;
-      this.encryptedMessage = encryptedMessage;
-      this.decryptedMessage = decryptedMessage;
-    });
-  }
-
-  String _getAppendedCharacters(String oldMessage, String newMessage) {
-    return newMessage.replaceFirst(oldMessage, "");
-  }
-
-  /// Append Encrypted characters to existing encrypted messages
-  void _appendEncryptedCharacters(String oldMessage, String newMessage) async {
-    // Add encrypted character
-    String appendedEncCharacters = await _encryptionMachine
-        .transform(_getAppendedCharacters(oldMessage, newMessage));
-    encryptedMessage += appendedEncCharacters;
-    decryptedMessage +=
-        await _decryptionMachine.transform(appendedEncCharacters);
-  }
-
   void _addEncryptedCharacterToMessage(String message) async {
-    // if (message.startsWith(this.message) &&
-    //     message.length > this.message.length) {
-    //   _appendEncryptedCharacters(this.message, message);
-    // } else {}
-    // setState(() {
-    //   this.message = message;
-    // });
-    _textMutationClassifier.detectMutation(this.message, message);
+    // Classify mutation performed on input text
+    _textMutationClassifier.classifyMutation(this.message, message);
   }
 
   Widget get _rawTextBox {
     return TextFormField(
+      expands: true,
+      minLines: null,
+      maxLines: null,
       onChanged: _addEncryptedCharacterToMessage,
       decoration: const InputDecoration(labelText: "Message"),
     );
@@ -185,18 +145,24 @@ class _TestDemoPageState extends State<TestDemoPage> {
           key: _formKey,
           child: Column(
             children: [
-              Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: _rawTextBox,
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: _encryptedResultWidget,
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: _decryptedResultWidget,
-              )
+              Expanded(
+                  flex: 5,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 10),
+                    child: _rawTextBox,
+                  )),
+              Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 10),
+                    child: _encryptedResultWidget,
+                  )),
+              Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 10),
+                    child: _decryptedResultWidget,
+                  ))
             ],
           )),
     ));
