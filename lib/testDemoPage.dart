@@ -121,9 +121,6 @@ class _TestDemoPageState extends State<TestDemoPage> {
 
   Widget get _rawTextBox {
     return TextFormField(
-      expands: true,
-      minLines: null,
-      maxLines: null,
       onChanged: _addEncryptedCharacterToMessage,
       decoration: const InputDecoration(labelText: "Message"),
     );
@@ -137,34 +134,42 @@ class _TestDemoPageState extends State<TestDemoPage> {
     return Text(decryptedMessage);
   }
 
+  Widget get _form {
+    return Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Flexible(
+                fit: FlexFit.loose,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: _rawTextBox,
+                )),
+            Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: _encryptedResultWidget,
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: _decryptedResultWidget,
+            )
+          ],
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Center(
-      child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Expanded(
-                  flex: 5,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: _rawTextBox,
-                  )),
-              Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: _encryptedResultWidget,
-                  )),
-              Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: _decryptedResultWidget,
-                  ))
-            ],
-          )),
+    return Scaffold(body: Center(
+      child: SingleChildScrollView(child: LayoutBuilder(
+        builder: ((context, constraints) {
+          return ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child:
+                    Column(mainAxisSize: MainAxisSize.max, children: [_form]),
+              ));
+        }),
+      )),
     ));
   }
 }
