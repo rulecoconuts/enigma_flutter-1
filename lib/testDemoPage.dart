@@ -121,6 +121,8 @@ class _TestDemoPageState extends State<TestDemoPage> {
 
   Widget get _rawTextBox {
     return TextFormField(
+      minLines: 1,
+      maxLines: 99,
       onChanged: _addEncryptedCharacterToMessage,
       decoration: const InputDecoration(labelText: "Message"),
     );
@@ -137,14 +139,12 @@ class _TestDemoPageState extends State<TestDemoPage> {
   Widget get _form {
     return Form(
         key: _formKey,
-        child: Column(
+        child: ListView(
           children: [
-            Flexible(
-                fit: FlexFit.loose,
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: _rawTextBox,
-                )),
+            Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: _rawTextBox,
+            ),
             Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: _encryptedResultWidget,
@@ -159,17 +159,6 @@ class _TestDemoPageState extends State<TestDemoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(
-      child: SingleChildScrollView(child: LayoutBuilder(
-        builder: ((context, constraints) {
-          return ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child:
-                    Column(mainAxisSize: MainAxisSize.max, children: [_form]),
-              ));
-        }),
-      )),
-    ));
+    return Material(child: _form);
   }
 }
