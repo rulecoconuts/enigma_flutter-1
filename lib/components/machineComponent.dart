@@ -1,4 +1,4 @@
 abstract class MachineComponent {
-  /// Generate config json
+  /// Generate a json representing the current configuration of the machine component
   Map<String, dynamic> generateConfig();
 }
