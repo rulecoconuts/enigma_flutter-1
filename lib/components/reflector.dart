@@ -20,9 +20,8 @@ class BasicAlphaNumericReflector implements Reflector {
 
   /// Randomly generate a mapping
   Map<String, String> _generateMapping() {
-    List<String> alphabetList = List.generate(
-        BasicAlphaNumericRotor.alphaNumerics.length,
-        (index) => BasicAlphaNumericRotor.alphaNumerics[index]);
+    List<String> alphabetList = [];
+    alphabetList.addAll(BasicEnigmaCharacterSet.characters);
 
     alphabetList.shuffle();
     Map<String, String> mapping = {};

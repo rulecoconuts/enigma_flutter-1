@@ -22,8 +22,6 @@ abstract class Rotor extends MachineComponent {
 }
 
 class BasicAlphaNumericRotor implements Rotor {
-  static String alphaNumerics = "";
-
   // Analogous to the mapping from one alphabet to another
   final List<int> wheel = [];
 
@@ -42,14 +40,16 @@ class BasicAlphaNumericRotor implements Rotor {
   }
 
   List<int> _generateWheel() {
-    List<int> wheel = List.generate(alphaNumerics.length, (index) => index);
+    List<int> wheel = List.generate(
+        BasicEnigmaCharacterSet.characters.length, (index) => index);
     wheel.shuffle();
     return wheel;
   }
 
   List<String> _generateSettings() {
-    List<String> settings =
-        List.generate(alphaNumerics.length, (index) => alphaNumerics[index]);
+    List<String> settings = List.generate(
+        BasicEnigmaCharacterSet.characters.length,
+        (index) => BasicEnigmaCharacterSet.characters[index]);
     settings.shuffle();
     return settings;
   }
@@ -59,7 +59,7 @@ class BasicAlphaNumericRotor implements Rotor {
 
   /// Get the index of the alphabet
   int _getAlphabetIndex(String character) {
-    return alphaNumerics.indexOf(character);
+    return BasicEnigmaCharacterSet.characters.indexOf(character);
   }
 
   /// Rotate the wheel a certain number of steps.
@@ -86,10 +86,12 @@ class BasicAlphaNumericRotor implements Rotor {
       // Update offset from initial wheel position
 
       offsetFromInitialWheelPosition =
-          (offsetFromInitialWheelPosition + direction) % alphaNumerics.length;
+          (offsetFromInitialWheelPosition + direction) %
+              BasicEnigmaCharacterSet.characters.length;
 
       bool passingFullRotationBackwards = backwards &&
-          offsetFromInitialWheelPosition == alphaNumerics.length - 1;
+          offsetFromInitialWheelPosition ==
+              BasicEnigmaCharacterSet.characters.length - 1;
       bool passingFullRotationForward =
           (!backwards) && offsetFromInitialWheelPosition == 0;
       if (passingFullRotationForward || passingFullRotationBackwards) {
@@ -100,7 +102,8 @@ class BasicAlphaNumericRotor implements Rotor {
 
   // Inverse of the transform operation
   String _backwardsTransform(String character) {
-    return alphaNumerics[wheel.indexOf(_getAlphabetIndex(character))];
+    return BasicEnigmaCharacterSet
+        .characters[wheel.indexOf(_getAlphabetIndex(character))];
   }
 
   /// Transform a character according to the rotor mapping
@@ -109,7 +112,8 @@ class BasicAlphaNumericRotor implements Rotor {
     String transformedCharacter = "";
     transformedCharacter = backwards
         ? _backwardsTransform(character)
-        : alphaNumerics[wheel[_getAlphabetIndex(character)]];
+        : BasicEnigmaCharacterSet
+            .characters[wheel[_getAlphabetIndex(character)]];
 
     return transformedCharacter;
   }
