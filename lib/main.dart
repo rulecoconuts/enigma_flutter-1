@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:html_character_entities/html_character_entities.dart';
 
 void main() {
-  List<String> charSet = BasicEnigmaCharacterSet.characters;
+  List<String> charSet = BasicEnigmaCharacterSet().generateCharacterList();
   runApp(const MyApp());
 }
 

@@ -6,8 +6,8 @@ abstract class MachineComponent {
 }
 
 class BasicEnigmaCharacterSet {
-  static List<String> characters = generateCharacterList();
-  static List<String> generateCharacterList() {
+  // static List<String> characters = generateCharacterList();
+  List<String> generateCharacterList() {
     Set<String> charSet = HtmlCharacterEntities.characters.values.toSet();
     charSet.addAll("۞\n".split(""));
     return charSet.toList();
