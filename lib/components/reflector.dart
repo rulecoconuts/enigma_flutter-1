@@ -13,16 +13,19 @@ abstract class Reflector extends MachineComponent {
 
 class BasicAlphaNumericReflector implements Reflector {
   final Map<String, String> mapping = {};
+  final List<String> characters = [];
 
-  BasicAlphaNumericReflector({Map<String, String>? mapping}) {
+  BasicAlphaNumericReflector(
+      {Map<String, String>? mapping, List<String>? characters}) {
+    this.characters.addAll(
+        characters ?? BasicEnigmaCharacterSet().generateCharacterList());
     this.mapping.addAll(mapping ?? _generateMapping());
   }
 
   /// Randomly generate a mapping
   Map<String, String> _generateMapping() {
-    List<String> alphabetList = List.generate(
-        BasicAlphaNumericRotor.alphaNumerics.length,
-        (index) => BasicAlphaNumericRotor.alphaNumerics[index]);
+    List<String> alphabetList = [];
+    alphabetList.addAll(characters);
 
     alphabetList.shuffle();
     Map<String, String> mapping = {};

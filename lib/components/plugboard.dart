@@ -11,6 +11,8 @@ abstract class Plugboard extends MachineComponent {
   /// Remove the mapping from the character
   void remove(String from);
 
+  void randomConfig();
+
   /// Configure a plugboard with json config information
   factory Plugboard.config(Map<String, dynamic> json) {
     return BasicPlugboard.config(json["config"]);
@@ -50,5 +52,12 @@ class BasicPlugboard implements Plugboard {
       "type": "${this.runtimeType}",
       "config": {"setting": setting}
     };
+  }
+
+  @override
+  void randomConfig() {
+    set("K", "M");
+    set("d", "p");
+    set("q", "x");
   }
 }

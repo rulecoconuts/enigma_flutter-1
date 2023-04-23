@@ -23,15 +23,32 @@ abstract class EnigmaMachine {
 
   Function(String originalMessage, String transformedMessage)? onCompleted;
 
+  /// Transform a message by passing it through the machine
   FutureOr<String> transform(String message);
 
-  Map<String, dynamic> generateConfig();
+  /// Get the current machine configuration.
+  /// The config is returned as a map that can be converted to a json string
+  Map<String, dynamic> getConfig();
 
+  /// Randomly configure the machine and its components
+  void randomConfig();
+
+  /// Factory constructor for creating config
   factory EnigmaMachine.config(Map<String, dynamic> json) {
     return BasicEnigmaMachine(
         plugboard: Plugboard.config(json["plugboard"]),
         reflector: Reflector.config(json["reflector"]),
         rotorSet: RotorSet.config(json["rotorSet"]));
+  }
+
+  factory EnigmaMachine.basicRandomConfig() {
+    var machine = BasicEnigmaMachine(
+        plugboard: BasicPlugboard(),
+        reflector: BasicAlphaNumericReflector(),
+        rotorSet: BasicRotorSet([]));
+    machine.randomConfig();
+
+    return machine;
   }
 }
 
@@ -107,12 +124,24 @@ class BasicEnigmaMachine implements EnigmaMachine {
   }
 
   @override
-  Map<String, dynamic> generateConfig() {
+  Map<String, dynamic> getConfig() {
     return {
       "type": "${this.runtimeType}",
       "plugboard": plugboard.generateConfig(),
       "reflector": reflector.generateConfig(),
       "rotorSet": rotorSet.generateConfig()
     };
+  }
+
+  @override
+  void randomConfig() {
+    // Configure plugboard
+    plugboard.randomConfig();
+    // Set rotors
+    List<Rotor> rotors = [];
+    rotors.add(BasicAlphaNumericRotor());
+    rotors.add(BasicAlphaNumericRotor());
+    rotors.add(BasicAlphaNumericRotor());
+    rotorSet = BasicRotorSet(rotors);
   }
 }
