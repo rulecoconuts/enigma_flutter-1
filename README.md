@@ -48,7 +48,8 @@ EnigmaMutationContext _encryptionContext = EnigmaMutationContext(
                                               onTextTransformed: _textEncrypted);
 
 EnigmaMutationContext _decryptionContext = EnigmaMutationContext(
-                                              machine: EnigmaMachine.config(_encryptionContext.machine.getConfig()),
+                                              machine: EnigmaMachine.config(_encryptionContext.
+                                                          machine.getConfig()),
                                               onTextTransformed: _textDecrypted);
 
 .
