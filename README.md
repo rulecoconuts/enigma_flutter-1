@@ -38,6 +38,44 @@ The enigma mutation context makes it possible for this implementation of the eni
 ## Serialization
 The machine, and all its parts have corresponding factory and serialization methods that make it easy to transfer them to some other user, allowing encrypted communication.
 
+## How to use
+The easiest way to use the machine is to wrap it in a Mutation Context which can then be used to monitor text changes;
+
+```dart
+// Setup encryption and decryption contexts
+EnigmaMutationContext _encryptionContext = EnigmaMutationContext(
+                                              machine: EnigmaMachine.basicRandomConfig(),
+                                              onTextTransformed: _textEncrypted);
+
+EnigmaMutationContext _decryptionContext = EnigmaMutationContext(
+                                              machine: EnigmaMachine.config(_encryptionContext.machine.getConfig()),
+                                              onTextTransformed: _textDecrypted);
+
+.
+.
+.
+void _textEncrypted(String text, String encryptedText) {
+    setState(() {
+      _decryptionContext.text = encryptedText;
+    });
+}
+
+void _textDecrypted(String encryptedText, String decryptedText) {
+    setState(() {});
+}
+```
+
+Now to encrypt your text:
+```dart
+_encryptionContext.text = message;
+```
+
+To build this example project, run the following commands:
+```bash
+dart pub get
+flutter run
+```
+
 ## What is next for this project?
 Currently, the machine runs on a simple UI.
 The next step is to create an aesthetically pleasing UI that matches the look and feel of the original enigma machine.
